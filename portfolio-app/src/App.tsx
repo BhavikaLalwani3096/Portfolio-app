@@ -7,6 +7,12 @@ import { useRef } from 'react';
 type ProjectTab = 'ongoing' | 'completed' | 'planned';
 
 function App() {
+  const [overlay, setOverlay] = useState<{
+    title: string;
+    items: { label: string; image: string }[];
+    activeIndex: number;
+  } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [activeTab, setActiveTab] = useState<ProjectTab>('ongoing');
 
@@ -42,6 +48,11 @@ const handleFormSubmit = (e: React.FormEvent) => {
     setTimeout(() => setFormStatus('idle'), 4000);
   });
 };
+const openOverlay = (title: string, items: { label: string; image: string }[], activeIndex = 0) => {
+  setOverlay({ title, items, activeIndex });
+};
+
+const closeOverlay = () => setOverlay(null);
 
   return (
     <>
@@ -51,19 +62,50 @@ const handleFormSubmit = (e: React.FormEvent) => {
           <img src={profilePhoto} alt="NavProfile" />
         </a>
         <h3 className="name">Bhavika Lalwani</h3>
-        <a className="nav-link" href="#profile">Profile</a>
-        <a className="nav-link" href="#aboutme">About</a>
-        <a className="nav-link" href="#skills">Skills</a>
-        <a className="nav-link" href="#education">Education</a>
-        <a className="nav-link" href="#experience">Experience</a>
-        <a className="nav-link" href="#projects">Projects</a>
-        <a className="nav-link" href="#certifications">Certifications</a>
-        <a className="nav-link" href="#achievements">Achievements</a>
-        <a className="nav-link" href="#resume">Resume</a>
-        <a className="nav-link" href="#contact">Contact</a>
+
+        {/* Desktop nav links */}
+        <div className="nav-links-desktop">
+          <a className="nav-link" href="#profile">Profile</a>
+          <a className="nav-link" href="#aboutme">About</a>
+          <a className="nav-link" href="#skills">Skills</a>
+          <a className="nav-link" href="#education">Education</a>
+          <a className="nav-link" href="#experience">Experience</a>
+          <a className="nav-link" href="#projects">Projects</a>
+          <a className="nav-link" href="#certifications">Certifications</a>
+          <a className="nav-link" href="#achievements">Achievements</a>
+          <a className="nav-link" href="#resume">Resume</a>
+          <a className="nav-link" href="#contact">Contact</a>
+        </div>
+
         <button className="displayToggle" onClick={toggleTheme}>
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
+
+        {/* Hamburger button — only visible on mobile */}
+        <button
+          className="hamburger"
+          onClick={() => setMenuOpen(prev => !prev)}
+          aria-label="Toggle menu"
+        >
+          <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
+          <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
+          <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
+        </button>
+        {/* Mobile dropdown menu */}
+        {menuOpen && (
+          <div className="mobile-menu">
+            {['profile','aboutme','skills','education','experience','projects','certifications','achievements','resume','contact'].map(id => (
+              <a                             
+                key={id}
+                className="mobile-nav-link"
+                href={`#${id}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                {id.charAt(0).toUpperCase() + id.slice(1)}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── PROFILE ── */}
@@ -439,6 +481,38 @@ const handleFormSubmit = (e: React.FormEvent) => {
 
         </div>
       </section>
+      {/* ── CERTIFICATE / RESUME OVERLAY ── */}
+      {overlay && (
+        <div className="overlay-backdrop" onClick={closeOverlay}>
+          <div className="overlay-panel" onClick={e => e.stopPropagation()}>
+
+            {/* Sidebar */}
+            <div className="overlay-sidebar">
+              <h3 className="overlay-sidebar-title">{overlay.title}</h3>
+              {overlay.items.map((item, i) => (
+                <button
+                  key={i}
+                  className={`overlay-sidebar-item ${overlay.activeIndex === i ? 'active' : ''}`}
+                  onClick={() => setOverlay(prev => prev ? { ...prev, activeIndex: i } : null)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Main viewer */}
+            <div className="overlay-main">
+              <button className="overlay-close" onClick={closeOverlay}>✕</button>
+              <img
+                className="overlay-image"
+                src={overlay.items[overlay.activeIndex].image}
+                alt={overlay.items[overlay.activeIndex].label}
+              />
+            </div>
+
+          </div>
+        </div>
+      )}
     </>
   )
 }
