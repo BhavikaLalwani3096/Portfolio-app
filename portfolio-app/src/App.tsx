@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import profilePhoto from './assets/image.jpeg'
 import './App.css'
 import emailjs from '@emailjs/browser';
-import { useRef } from 'react';
+import cert10th from './assets/10th.jpeg'
 
 type ProjectTab = 'ongoing' | 'completed' | 'planned';
 
@@ -15,6 +15,12 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [activeTab, setActiveTab] = useState<ProjectTab>('ongoing');
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragStart = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -23,36 +29,44 @@ function App() {
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
-  const formRef = useRef<HTMLFormElement>(null);
-const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
 
-const handleFormSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!formRef.current) return;
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formRef.current) return;
+    setFormStatus('sending');
+    emailjs.sendForm(
+      'service_yz0loki',
+      'template_l6gz1sw',
+      formRef.current,
+      'HuSx4Klqxsq8QXvDL'
+    )
+    .then(() => {
+      setFormStatus('success');
+      formRef.current?.reset();
+      setTimeout(() => setFormStatus('idle'), 4000);
+    })
+    .catch(() => {
+      setFormStatus('error');
+      setTimeout(() => setFormStatus('idle'), 4000);
+    });
+  };
 
-  setFormStatus('sending');
+  const resetView = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
 
-  emailjs.sendForm(
-    'service_yz0loki',    
-    'template_l6gz1sw',  
-    formRef.current,
-    'HuSx4Klqxsq8QXvDL'     
-  )
-  .then(() => {
-    setFormStatus('success');
-    formRef.current?.reset();
-    setTimeout(() => setFormStatus('idle'), 4000);
-  })
-  .catch(() => {
-    setFormStatus('error');
-    setTimeout(() => setFormStatus('idle'), 4000);
-  });
-};
-const openOverlay = (title: string, items: { label: string; image: string }[], activeIndex = 0) => {
-  setOverlay({ title, items, activeIndex });
-};
+  const openOverlay = (title: string, items: { label: string; image: string }[], activeIndex = 0) => {
+    setOverlay({ title, items, activeIndex });
+    resetView();
+    document.body.style.overflow = 'hidden';
+  };
 
-const closeOverlay = () => setOverlay(null);
+  const closeOverlay = () => {
+    setOverlay(null);
+    resetView();
+    document.body.style.overflow = '';
+  };
 
   return (
     <>
@@ -62,8 +76,6 @@ const closeOverlay = () => setOverlay(null);
           <img src={profilePhoto} alt="NavProfile" />
         </a>
         <h3 className="name">Bhavika Lalwani</h3>
-
-        {/* Desktop nav links */}
         <div className="nav-links-desktop">
           <a className="nav-link" href="#profile">Profile</a>
           <a className="nav-link" href="#aboutme">About</a>
@@ -76,31 +88,18 @@ const closeOverlay = () => setOverlay(null);
           <a className="nav-link" href="#resume">Resume</a>
           <a className="nav-link" href="#contact">Contact</a>
         </div>
-
         <button className="displayToggle" onClick={toggleTheme}>
           {theme === 'dark' ? '☀️' : '🌙'}
         </button>
-
-        {/* Hamburger button — only visible on mobile */}
-        <button
-          className="hamburger"
-          onClick={() => setMenuOpen(prev => !prev)}
-          aria-label="Toggle menu"
-        >
+        <button className="hamburger" onClick={() => setMenuOpen(prev => !prev)} aria-label="Toggle menu">
           <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
           <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
           <span className={`hamburger-line ${menuOpen ? 'open' : ''}`} />
         </button>
-        {/* Mobile dropdown menu */}
         {menuOpen && (
           <div className="mobile-menu">
             {['profile','aboutme','skills','education','experience','projects','certifications','achievements','resume','contact'].map(id => (
-              <a                             
-                key={id}
-                className="mobile-nav-link"
-                href={`#${id}`}
-                onClick={() => setMenuOpen(false)}
-              >
+              <a key={id} className="mobile-nav-link" href={`#${id}`} onClick={() => setMenuOpen(false)}>
                 {id.charAt(0).toUpperCase() + id.slice(1)}
               </a>
             ))}
@@ -134,12 +133,10 @@ const closeOverlay = () => setOverlay(null);
           by doing, and this portfolio is a reflection of exactly that — everything I've worked on, everything I'm working
           on, and everything I'm planning next.
         </p>
-
         <h2 className="section-title" style={{ marginTop: '2em' }}>Interests</h2>
         <p className="section-content">
           AI and Machine Learning are my main passions, but I'm also deeply interested in software development, data science,
-          and cybersecurity. I love exploring new technologies and frameworks, and I'm always on the lookout for exciting
-          projects to work on.
+          and cybersecurity. I love exploring new technologies and frameworks, and I'm always on the lookout for exciting projects to work on.
         </p>
         <p className="section-content" style={{ marginTop: '1em' }}>
           I also have a strong interest in data structures and algorithms and enjoy working on challenging problems.
@@ -150,7 +147,6 @@ const closeOverlay = () => setOverlay(null);
       {/* ── SKILLS ── */}
       <section id="skills" className="skills-section">
         <h2 className="section-title">Skills</h2>
-
         <div className="skills-category">
           <h3 className="skills-category-title">Languages</h3>
           <div className="skills-grid">
@@ -159,7 +155,6 @@ const closeOverlay = () => setOverlay(null);
             ))}
           </div>
         </div>
-
         <div className="skills-category">
           <h3 className="skills-category-title">Frameworks & Tools</h3>
           <div className="skills-grid">
@@ -168,7 +163,6 @@ const closeOverlay = () => setOverlay(null);
             ))}
           </div>
         </div>
-
         <div className="skills-category">
           <h3 className="skills-category-title">AI / ML & Data</h3>
           <div className="skills-grid">
@@ -177,7 +171,6 @@ const closeOverlay = () => setOverlay(null);
             ))}
           </div>
         </div>
-
         <div className="skills-category">
           <h3 className="skills-category-title">Concepts</h3>
           <div className="skills-grid">
@@ -198,7 +191,9 @@ const closeOverlay = () => setOverlay(null);
             <p className="card-content">Centre Point School, Katol Road, Nagpur</p>
             <p className="card-content">Year: 2022</p>
             <p className="card-content">Percentage: <strong>92%</strong></p>
-            <a className="card-button">View Certificate</a>
+            <button className="card-button" onClick={() => openOverlay('10th Grade', [{ label: 'Marksheet', image: cert10th }])}>
+              View Certificate
+            </button>
           </div>
           <div className="card">
             <span className="status-badge completed">Completed</span>
@@ -206,7 +201,7 @@ const closeOverlay = () => setOverlay(null);
             <p className="card-content">Maharashtra Institute of Technology, Pune</p>
             <p className="card-content">2022 – 2025</p>
             <p className="card-content">CGPA: <strong>8.75</strong></p>
-            <a className="card-button">View Certificate</a>
+            <button className="card-button">View Certificate</button>
           </div>
           <div className="card">
             <span className="status-badge pursuing">Pursuing</span>
@@ -214,7 +209,7 @@ const closeOverlay = () => setOverlay(null);
             <p className="card-content">Maharashtra Institute of Technology, Pune</p>
             <p className="card-content">2025 – 2028</p>
             <p className="card-content">CGPA: <strong>8.75</strong> (until Sem 1, Year 2)</p>
-            <a className="card-button">View Transcript</a>
+            <button className="card-button">View Transcript</button>
           </div>
         </div>
       </section>
@@ -238,7 +233,7 @@ const closeOverlay = () => setOverlay(null);
                 <span key={t} className="tech-tag">{t}</span>
               ))}
             </div>
-            <a className="card-button">View Certificate</a>
+            <button className="card-button">View Certificate</button>
           </div>
         </div>
       </section>
@@ -257,36 +252,29 @@ const closeOverlay = () => setOverlay(null);
             </button>
           ))}
         </div>
-
         <div className="cards-container">
           {activeTab === 'ongoing' && (
-            <>
-              <div className="card">
-                <span className="status-badge ongoing">Ongoing</span>
-                <h3 className="card-title">Portfolio App</h3>
-                <p className="card-content">A personal portfolio website built with React and Vite, showcasing my projects, skills, and experience. Supports dark and light themes.</p>
-                <div className="tech-tags">
-                  {['React', 'TypeScript', 'Vite', 'CSS'].map(t => <span key={t} className="tech-tag">{t}</span>)}
-                </div>
-                <a className="card-button" href="https://github.com/BhavikaLalwani3096" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+            <div className="card">
+              <span className="status-badge ongoing">Ongoing</span>
+              <h3 className="card-title">Portfolio App</h3>
+              <p className="card-content">A personal portfolio website built with React and Vite, showcasing my projects, skills, and experience. Supports dark and light themes.</p>
+              <div className="tech-tags">
+                {['React', 'TypeScript', 'Vite', 'CSS'].map(t => <span key={t} className="tech-tag">{t}</span>)}
               </div>
-            </>
+              <a className="card-button" href="https://github.com/BhavikaLalwani3096/Portfolio-app" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+            </div>
           )}
-
           {activeTab === 'completed' && (
-            <>
-              <div className="card card-wide">
-                <span className="status-badge completed">Completed</span>
-                <h3 className="card-title">HRM Web Application</h3>
-                <p className="card-content">A Human Resource Management web application developed during my internship at Salahkaar Consultants. I served as Team Lead and was responsible for the React frontend and Django backend integration.</p>
-                <div className="tech-tags">
-                  {['React', 'Django', 'Python', 'SQL'].map(t => <span key={t} className="tech-tag">{t}</span>)}
-                </div>
-                <a className="card-button">View Details</a>
+            <div className="card card-wide">
+              <span className="status-badge completed">Completed</span>
+              <h3 className="card-title">HRM Web Application</h3>
+              <p className="card-content">A Human Resource Management web application developed during my internship at Salahkaar Consultants. I served as Team Lead and was responsible for the React frontend and Django backend integration.</p>
+              <div className="tech-tags">
+                {['React', 'Django', 'Python', 'SQL'].map(t => <span key={t} className="tech-tag">{t}</span>)}
               </div>
-            </>
+              <button className="card-button">View Details</button>
+            </div>
           )}
-
           {activeTab === 'planned' && (
             <>
               <div className="card">
@@ -312,7 +300,6 @@ const closeOverlay = () => setOverlay(null);
                 <div className="tech-tags">
                   {['Python', 'OpenCV', 'Deep Learning', 'TensorFlow'].map(t => <span key={t} className="tech-tag">{t}</span>)}
                 </div>
-                {/* <a className="card-button">View on GitHub</a> */}
               </div>
               <div className="card">
                 <span className="status-badge planned">Planned</span>
@@ -321,7 +308,6 @@ const closeOverlay = () => setOverlay(null);
                 <div className="tech-tags">
                   {['Flutter', 'Dart', 'Android', 'iOS'].map(t => <span key={t} className="tech-tag">{t}</span>)}
                 </div>
-                {/* <a className="card-button">View on GitHub</a> */}
               </div>
             </>
           )}
@@ -336,7 +322,7 @@ const closeOverlay = () => setOverlay(null);
             <h3 className="card-title">Add your certifications here</h3>
             <p className="card-content">Platform / Issuer</p>
             <p className="card-content">Month Year</p>
-            <a className="card-button">Verify Certificate</a>
+            <button className="card-button">Verify Certificate</button>
           </div>
         </div>
       </section>
@@ -392,21 +378,12 @@ const closeOverlay = () => setOverlay(null);
       <section id="contact" className="contact-section">
         <h2 className="section-title">Contact</h2>
         <div className="contact-wrapper">
-
-          {/* LEFT — Form */}
           <div className="contact-form-card">
             <h3 className="contact-card-title">Send a Message</h3>
             <form ref={formRef} onSubmit={handleFormSubmit} className="contact-form">
               <div className="form-group">
                 <label className="form-label" htmlFor="from_email">Your Email</label>
-                <input
-                  id="from_email"
-                  name="from_email"
-                  type="email"
-                  className="form-input"
-                  placeholder="you@example.com"
-                  required
-                />
+                <input id="from_email" name="from_email" type="email" className="form-input" placeholder="you@example.com" required />
               </div>
               <div className="form-group">
                 <label className="form-label" htmlFor="subject">Purpose</label>
@@ -420,14 +397,7 @@ const closeOverlay = () => setOverlay(null);
               </div>
               <div className="form-group">
                 <label className="form-label" htmlFor="message">Message</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  className="form-input form-textarea"
-                  placeholder="Write your message here..."
-                  rows={5}
-                  required
-                />
+                <textarea id="message" name="message" className="form-input form-textarea" placeholder="Write your message here..." rows={5} required />
               </div>
               <button type="submit" className="form-submit" disabled={formStatus === 'sending'}>
                 {formStatus === 'idle' && 'Send Message'}
@@ -437,13 +407,9 @@ const closeOverlay = () => setOverlay(null);
               </button>
             </form>
           </div>
-
-          {/* RIGHT — Contact Info */}
           <div className="contact-info-card">
             <h3 className="contact-card-title">Get in Touch</h3>
-            <p className="contact-description">
-              Feel free to reach out for opportunities, collaborations, or just to say hi!
-            </p>
+            <p className="contact-description">Feel free to reach out for opportunities, collaborations, or just to say hi!</p>
             <div className="contact-links">
               <a href="mailto:lalwanibhavi06@gmail.com" className="contact-link-item">
                 <span className="contact-icon">📧</span>
@@ -452,24 +418,14 @@ const closeOverlay = () => setOverlay(null);
                   <p className="contact-link-value">lalwanibhavi06@gmail.com</p>
                 </div>
               </a>
-              <a
-                href="https://linkedin.com/in/bhavika-lalwani-47850a2a9"
-                className="contact-link-item"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href="https://linkedin.com/in/bhavika-lalwani-47850a2a9" className="contact-link-item" target="_blank" rel="noopener noreferrer">
                 <span className="contact-icon">💼</span>
                 <div>
                   <p className="contact-link-label">LinkedIn</p>
                   <p className="contact-link-value">bhavika-lalwani</p>
                 </div>
               </a>
-              <a
-                href="https://github.com/BhavikaLalwani3096"
-                className="contact-link-item"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href="https://github.com/BhavikaLalwani3096" className="contact-link-item" target="_blank" rel="noopener noreferrer">
                 <span className="contact-icon">🐙</span>
                 <div>
                   <p className="contact-link-label">GitHub</p>
@@ -478,10 +434,10 @@ const closeOverlay = () => setOverlay(null);
               </a>
             </div>
           </div>
-
         </div>
       </section>
-      {/* ── CERTIFICATE / RESUME OVERLAY ── */}
+
+      {/* ── OVERLAY ── */}
       {overlay && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-panel" onClick={e => e.stopPropagation()}>
@@ -493,7 +449,10 @@ const closeOverlay = () => setOverlay(null);
                 <button
                   key={i}
                   className={`overlay-sidebar-item ${overlay.activeIndex === i ? 'active' : ''}`}
-                  onClick={() => setOverlay(prev => prev ? { ...prev, activeIndex: i } : null)}
+                  onClick={() => {
+                    setOverlay(prev => prev ? { ...prev, activeIndex: i } : null);
+                    resetView();
+                  }}
                 >
                   {item.label}
                 </button>
@@ -501,12 +460,45 @@ const closeOverlay = () => setOverlay(null);
             </div>
 
             {/* Main viewer */}
-            <div className="overlay-main">
+            <div
+              className="overlay-main"
+              onWheel={e => {
+                e.preventDefault();
+                setZoom(prev => Math.min(Math.max(prev - e.deltaY * 0.001, 0.5), 4));
+              }}
+              onMouseDown={e => {
+                setDragging(true);
+                dragStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+              }}
+              onMouseMove={e => {
+                if (!dragging || !dragStart.current) return;
+                setPan({
+                  x: dragStart.current.panX + (e.clientX - dragStart.current.x),
+                  y: dragStart.current.panY + (e.clientY - dragStart.current.y),
+                });
+              }}
+              onMouseUp={() => setDragging(false)}
+              onMouseLeave={() => setDragging(false)}
+              style={{ cursor: dragging ? 'grabbing' : zoom > 1 ? 'grab' : 'default' }}
+            >
               <button className="overlay-close" onClick={closeOverlay}>✕</button>
+
+              <div className="zoom-controls">
+                <button onClick={() => setZoom(prev => Math.min(prev + 0.25, 4))}>＋</button>
+                <span>{Math.round(zoom * 100)}%</span>
+                <button onClick={() => setZoom(prev => Math.max(prev - 0.25, 0.5))}>－</button>
+                <button onClick={resetView}>Reset</button>
+              </div>
+
               <img
                 className="overlay-image"
                 src={overlay.items[overlay.activeIndex].image}
                 alt={overlay.items[overlay.activeIndex].label}
+                draggable={false}
+                style={{
+                  transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                  transition: dragging ? 'none' : 'transform 0.15s ease',
+                }}
               />
             </div>
 
@@ -518,6 +510,3 @@ const closeOverlay = () => setOverlay(null);
 }
 
 export default App;
-
-
-

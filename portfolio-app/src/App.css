@@ -97,7 +97,7 @@
   padding: 4em 2em;
 }
 
-/* ── SECTION WRAPPER (for sections with title inside) ── */
+/* ── SECTION WRAPPER ── */
 .section-wrapper {
   padding: 4em 2em;
 }
@@ -367,7 +367,8 @@
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
-.status-badge.upcoming {
+.status-badge.upcoming,
+.status-badge.planned {
   background-color: rgba(251, 191, 36, 0.15);
   color: #fbbf24;
   border: 1px solid rgba(251, 191, 36, 0.3);
@@ -384,7 +385,8 @@
   color: #1d4ed8;
 }
 
-[data-theme="light"] .status-badge.upcoming {
+[data-theme="light"] .status-badge.upcoming,
+[data-theme="light"] .status-badge.planned {
   background-color: rgba(251, 191, 36, 0.1);
   color: #b45309;
 }
@@ -540,7 +542,6 @@
   flex-wrap: wrap;
 }
 
-/* ── SHARED CARD STYLE ── */
 .contact-form-card,
 .contact-info-card {
   flex: 1;
@@ -570,7 +571,6 @@
   color: var(--text);
 }
 
-/* ── FORM ── */
 .contact-form {
   display: flex;
   flex-direction: column;
@@ -681,7 +681,6 @@ select.form-input option {
   box-shadow: 0 4px 15px rgba(29, 78, 216, 0.15) !important;
 }
 
-/* ── CONTACT INFO CARD ── */
 .contact-description {
   font-size: 0.95em;
   color: var(--text-secondary);
@@ -754,7 +753,7 @@ select.form-input option {
 
 /* ── HAMBURGER BUTTON ── */
 .hamburger {
-  display: none !important; /* hidden on desktop */
+  display: none !important;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -776,7 +775,6 @@ select.form-input option {
   transition: transform 0.3s, opacity 0.3s;
 }
 
-/* Animate into X when open */
 .hamburger .hamburger-line.open:nth-child(1) {
   transform: translateY(7px) rotate(45deg);
 }
@@ -789,9 +787,9 @@ select.form-input option {
 
 /* ── MOBILE DROPDOWN MENU ── */
 .mobile-menu {
-  display: none; /* hidden on desktop */
+  display: none;
   position: absolute;
-  top: 80px;    /* just below the navbar */
+  top: 80px;
   left: 0;
   right: 0;
   background-color: rgba(12, 17, 66, 0.95);
@@ -833,15 +831,13 @@ select.form-input option {
 /* ── RESPONSIVE BREAKPOINT ── */
 @media (max-width: 768px) {
   .nav-links-desktop {
-    display: none; /* hide desktop links */
+    display: none;
   }
-
   .hamburger {
-    display: flex !important; /* show hamburger */
+    display: flex !important;
   }
-
   .mobile-menu {
-    display: flex; /* show dropdown when menuOpen is true */
+    display: flex;
   }
 }
 
@@ -951,8 +947,9 @@ select.form-input option {
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  overflow: hidden;       /* clips image when zoomed/panned outside bounds */
   min-height: 400px;
+  user-select: none;      /* prevents text selection while dragging */
 }
 
 [data-theme="light"] .overlay-main {
@@ -983,12 +980,57 @@ select.form-input option {
   background-color: rgba(255, 255, 255, 0.2) !important;
 }
 
+/* Image — no max constraints so zoom can go beyond container */
 .overlay-image {
-  max-width: 100%;
-  max-height: 80vh;
+  width: auto;
+  height: auto;
+  max-width: 90%;
+  max-height: 75vh;
   object-fit: contain;
   border-radius: 8px;
-  padding: 1.5em;
+  pointer-events: none;   /* prevents image drag interfering with pan */
+  transform-origin: center center;
+}
+
+/* ── ZOOM CONTROLS ── */
+.zoom-controls {
+  position: absolute;
+  bottom: 1em;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 0.4em 0.8em;
+  z-index: 10;
+}
+
+.zoom-controls button {
+  background: transparent !important;
+  border: none !important;
+  color: #e2e8f0 !important;
+  font-size: 1.1em;
+  padding: 0.15em 0.5em !important;
+  cursor: pointer;
+  border-radius: 6px !important;
+  line-height: 1;
+  transition: background-color 0.2s !important;
+}
+
+.zoom-controls button:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.zoom-controls span {
+  font-size: 0.82em;
+  color: #e2e8f0;
+  min-width: 42px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── MOBILE OVERLAY ── */
