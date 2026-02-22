@@ -1,0 +1,111 @@
+/* ── DARK THEME (default) ── */
+:root {
+  --bg: #0c1142;
+  --text: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --link: #60a5fa;
+  --link-hover: #93c5fd;
+  --btn-bg: rgba(255, 255, 255, 0.1);
+  --btn-color: #e2e8f0;
+  --skill-bg: rgba(255, 255, 255, 0.08);
+  --skill-color: #e2e8f0;
+  --skill-hover-bg: rgba(255, 255, 255, 0.18);
+  --skill-hover-color: #ffffff;
+  --tag-bg: rgba(255, 255, 255, 0.1);
+  --tag-color: #e2e8f0;
+  --nav-hover-bg: rgba(255, 255, 255, 0.12);
+  --nav-hover-color: #ffffff;
+}
+
+/* ── LIGHT THEME ── */
+[data-theme="light"] {
+  --bg: #f0f4ff;
+  --text: #1a202c;
+  --text-secondary: #4a5568;
+  --link: #1d4ed8;
+  --link-hover: #2563eb;
+  --btn-bg: rgba(0, 0, 0, 0.06);
+  --btn-color: #1a202c;
+  --skill-bg: rgba(0, 0, 0, 0.05);
+  --skill-color: #1a202c;
+  --skill-hover-bg: rgba(0, 0, 0, 0.12);
+  --skill-hover-color: #0f172a;
+  --tag-bg: rgba(0, 0, 0, 0.06);
+  --tag-color: #1a202c;
+  --nav-hover-bg: rgba(0, 0, 0, 0.07);
+  --nav-hover-color: #0f172a;
+}
+
+/* ── BASE ── */
+:root {
+  font-family: 'Inter', system-ui, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  padding-top: 90px; /* space below fixed navbar */
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+a {
+  font-weight: 500;
+  color: var(--link);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+/* Global button style — specific components override with !important where needed */
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--btn-bg);
+  color: var(--btn-color);
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.3s, color 0.3s;
+}
+
+button:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="light"] button:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 3px solid rgba(96, 165, 250, 0.5);
+  outline-offset: 2px;
+}
